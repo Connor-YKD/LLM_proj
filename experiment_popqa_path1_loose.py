@@ -18,17 +18,14 @@ MODEL_NAME = "Qwen/Qwen2.5-7B-Instruct"
 DATASET_NAME = "ibm-research/popqa-tp"
 
 MAX_NEW_TOKENS = 8
-N_QUESTIONS = 3
+N_QUESTIONS = 12
 N_PARAPHRASES_TOTAL = 4
-SEED = 1
 
-random.seed(SEED)
-torch.manual_seed(SEED)
-if torch.cuda.is_available():
-    torch.cuda.manual_seed_all(SEED)
+SELECTION_SEED = 100
+GENERATION_SEEDS = [4, 16, 64]
 
 SAMPLES_PER_BATCH = 4
-N_BATCHES_PER_TRANSFORM = 5
+N_BATCHES_PER_TRANSFORM = 4
 TEMPERATURE = 0.7
 TOP_P = 0.95
 
@@ -57,6 +54,18 @@ if isinstance(first_device, int):
 else:
     INPUT_DEVICE = first_device
 
+
+def derived_generation_seed(
+    base_seed: int,
+    question_id: int,
+    reformulation_index: int,
+    batch_index: int,
+) -> int:
+    seed = base_seed
+    seed = (seed * 1000003 + question_id + 1) % (2**31 - 1)
+    seed = (seed * 1000003 + reformulation_index + 1) % (2**31 - 1)
+    seed = (seed * 1000003 + batch_index + 1) % (2**31 - 1)
+    return seed
 
 # Time Limit
 class QuestionTimeout(Exception):
@@ -287,7 +296,11 @@ def build_standalone_prompt(question: str) -> str:
 
 
 # Generation
-def generate_many(question: str, n: int) -> list[str]:
+def generate_many(
+    question: str,
+    n: int,
+    generation_seed: int | None = None,
+) -> list[str]:
     prompt = build_standalone_prompt(question)
     messages = [{"role": "user", "content": prompt}]
 
@@ -298,6 +311,11 @@ def generate_many(question: str, n: int) -> list[str]:
         return_dict=True,
         return_tensors="pt",
     ).to(INPUT_DEVICE)
+
+    if generation_seed is not None:
+        torch.manual_seed(generation_seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(generation_seed)
 
     with torch.no_grad():
         outputs = model.generate(
@@ -429,7 +447,11 @@ def is_clean_group(questions: list[str]) -> bool:
 
 
 # Experiment
-def run_one_example(example: dict, timeout_seconds: float = 300.0) -> dict:
+def run_one_example(
+    example: dict,
+    base_generation_seed: int,
+    timeout_seconds: float = 480.0,
+) -> dict:
     start_time = time.perf_counter()
     deadline = start_time + timeout_seconds
 
@@ -447,7 +469,18 @@ def run_one_example(example: dict, timeout_seconds: float = 300.0) -> dict:
         for r in range(N_BATCHES_PER_TRANSFORM):
             check_deadline(deadline, f"reformulation {j}, batch {r+1} before generation")
 
-            preds = generate_many(question, SAMPLES_PER_BATCH)
+            batch_seed = derived_generation_seed(
+                base_seed=base_generation_seed,
+                question_id=qid,
+                reformulation_index=j,
+                batch_index=r + 1,
+            )
+
+            preds = generate_many(
+                question,
+                SAMPLES_PER_BATCH,
+                generation_seed=batch_seed,
+            )
 
             check_deadline(deadline, f"reformulation {j}, batch {r+1} after generation")
 
@@ -654,28 +687,14 @@ def build_eq_correctness_table(results: list[dict]) -> dict:
     return table
 
 
-# Main
-def main():
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-    grouped = load_popqa_tp_records()
-
-    filtered = [
-        g for g in grouped
-        if is_clean_question(g["questions"][0]) and is_clean_group(g["questions"])
-    ]
-
-    print(f"Usable groups after filtering: {len(filtered)}")
-
-    if len(filtered) < N_QUESTIONS:
-        raise ValueError(
-            f"Need at least {N_QUESTIONS} usable examples, but only found {len(filtered)}."
-        )
-
-    rng = random.Random(SEED)
+def run_single_generation_seed(
+    filtered: list[dict],
+    generation_seed: int,
+) -> dict:
+    selection_rng = random.Random(SELECTION_SEED)
 
     candidate_pool = filtered[:]
-    rng.shuffle(candidate_pool)
+    selection_rng.shuffle(candidate_pool)
 
     queue = candidate_pool[:N_QUESTIONS]
     next_pool_idx = N_QUESTIONS
@@ -684,7 +703,12 @@ def main():
     skipped_timeout = []
     attempted = 0
 
-    print("Beginning Path 1 instability run...\n")
+    print("\n===================================")
+    print(
+        f"Path 1 run with selection_seed={SELECTION_SEED}, "
+        f"generation_seed={generation_seed}"
+    )
+    print("===================================\n")
 
     while len(results) < N_QUESTIONS:
         if not queue:
@@ -698,12 +722,17 @@ def main():
         qid = example["id"]
         qtext = example["questions"][0]
         print(
-            f"[Attempt {attempted}] Running id={qid} | completed={len(results)}/{N_QUESTIONS}"
+            f"[Attempt {attempted}] Running id={qid} | "
+            f"completed={len(results)}/{N_QUESTIONS}"
         )
         print(f"Question: {qtext}")
 
         try:
-            res = run_one_example(example, timeout_seconds=400.0)
+            res = run_one_example(
+                example,
+                base_generation_seed=generation_seed,
+                timeout_seconds=480.0,
+            )
             results.append(res)
             print(
                 f"  -> finished in {res['elapsed_seconds']:.2f}s | "
@@ -729,9 +758,7 @@ def main():
             next_pool_idx += 1
             queue.append(replacement)
 
-            print(
-                f"  -> appended replacement id={replacement['id']} to queue tail"
-            )
+            print(f"  -> appended replacement id={replacement['id']} to queue tail")
 
         except Exception as e:
             print(f"  -> ERROR on id={qid}: {e}")
@@ -777,9 +804,9 @@ def main():
         reverse=True,
     )[:5]
 
-    summary = {
-        "model_name": MODEL_NAME,
-        "dataset_name": DATASET_NAME,
+    return {
+        "selection_seed": SELECTION_SEED,
+        "generation_seed": generation_seed,
         "n_questions": len(results),
         "n_paraphrases_total": N_PARAPHRASES_TOTAL,
         "samples_per_batch": SAMPLES_PER_BATCH,
@@ -787,7 +814,7 @@ def main():
         "temperature": TEMPERATURE,
         "top_p": TOP_P,
         "max_new_tokens": MAX_NEW_TOKENS,
-        "timeout_seconds_per_question": 400.0,
+        "timeout_seconds_per_question": 480.0,
         "n_timeout_skips": len(skipped_timeout),
         "timeout_skips": skipped_timeout,
         "avg_within_variability": avg_within_variability,
@@ -809,24 +836,57 @@ def main():
         "results": results,
     }
 
+
+# Main
+def main():
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    grouped = load_popqa_tp_records()
+
+    filtered = [
+        g for g in grouped
+        if is_clean_question(g["questions"][0]) and is_clean_group(g["questions"])
+    ]
+
+    print(f"Usable groups after filtering: {len(filtered)}")
+
+    if len(filtered) < N_QUESTIONS:
+        raise ValueError(
+            f"Need at least {N_QUESTIONS} usable examples, but only found {len(filtered)}."
+        )
+
+    all_runs = []
+    print("Beginning Path 1 multi-seed run...\n")
+
+    for generation_seed in GENERATION_SEEDS:
+        run_summary = run_single_generation_seed(
+            filtered,
+            generation_seed=generation_seed,
+        )
+        all_runs.append(run_summary)
+
+    summary = {
+        "model_name": MODEL_NAME,
+        "dataset_name": DATASET_NAME,
+        "selection_seed": SELECTION_SEED,
+        "generation_seeds": GENERATION_SEEDS,
+        "n_runs": len(all_runs),
+        "n_questions_target": N_QUESTIONS,
+        "n_paraphrases_total": N_PARAPHRASES_TOTAL,
+        "samples_per_batch": SAMPLES_PER_BATCH,
+        "n_batches_per_transform": N_BATCHES_PER_TRANSFORM,
+        "temperature": TEMPERATURE,
+        "top_p": TOP_P,
+        "max_new_tokens": MAX_NEW_TOKENS,
+        "runs": all_runs,
+    }
+
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
 
     print("\n===================================")
-    print("Finished PopQA Path 1 instability experiment.")
+    print("Finished PopQA Path 1 multi-seed instability experiment.")
     print("===================================")
-    print(f"Average within variability:   {avg_within_variability:.3f}")
-    print(f"Average between variability:  {avg_between_variability:.3f}")
-    print(f"Average excess instability:   {avg_excess_instability:.3f}")
-    print(f"Average pairwise instability: {avg_pairwise_instability:.3f}")
-    print(f"Average aggregated entropy:   {avg_aggregated_entropy:.3f}")
-    print(f"Mean correctness diagnostic:  {mean_correctness_diagnostic:.3f}")
-    print(f"#(E_q > 0):                   {n_positive_excess}/{len(results)} ({frac_positive_excess:.3f})")
-    print(f"#(E_q = 0):                   {n_zero_excess}/{len(results)} ({frac_zero_excess:.3f})")
-    print(f"#(E_q < 0):                   {n_negative_excess}/{len(results)} ({frac_negative_excess:.3f})")
-    print(f"Timeout skips:                {len(skipped_timeout)}")
-    print("E_q x correctness table:")
-    print(json.dumps(eq_correctness_table, indent=2))
 
 
 if __name__ == "__main__":
