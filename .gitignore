@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.pyc
+
+# outputs
+outputs/
+
+# virtual environments
+llmproj/
+
+offload/

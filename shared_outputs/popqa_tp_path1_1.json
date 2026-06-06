@@ -1,0 +1,1873 @@
+{
+  "model_name": "Qwen/Qwen2.5-7B-Instruct",
+  "dataset_name": "ibm-research/popqa-tp",
+  "n_questions": 3,
+  "n_paraphrases_total": 4,
+  "samples_per_batch": 4,
+  "n_batches_per_transform": 5,
+  "temperature": 0.7,
+  "top_p": 0.95,
+  "max_new_tokens": 8,
+  "timeout_seconds_per_question": 400.0,
+  "n_timeout_skips": 13,
+  "timeout_skips": [
+    {
+      "id": 3908750,
+      "question": "Who is the mother of Utu?",
+      "reason": "Question exceeded time limit during semantic cluster outer loop i=6"
+    },
+    {
+      "id": 3558671,
+      "question": "Who was the director of Outbreak?",
+      "reason": "Question exceeded time limit during semantic cluster pair (2,18)"
+    },
+    {
+      "id": 2674103,
+      "question": "Who was the producer of The Lovers?",
+      "reason": "Question exceeded time limit during semantic cluster pair (1,15)"
+    },
+    {
+      "id": 4984600,
+      "question": "Who was the director of Michael?",
+      "reason": "Question exceeded time limit during semantic cluster pair (3,5)"
+    },
+    {
+      "id": 4869994,
+      "question": "Who was the screenwriter for Roads of Kiarostami?",
+      "reason": "Question exceeded time limit during semantic cluster outer loop i=1"
+    },
+    {
+      "id": 1153613,
+      "question": "Who was the director of Mother and Child?",
+      "reason": "Question exceeded time limit during semantic cluster pair (1,9)"
+    },
+    {
+      "id": 657330,
+      "question": "Who was the director of Stretch?",
+      "reason": "Question exceeded time limit during semantic cluster pair (1,13)"
+    },
+    {
+      "id": 2084522,
+      "question": "Who was the composer of Champion?",
+      "reason": "Question exceeded time limit during semantic cluster pair (1,25)"
+    },
+    {
+      "id": 1495150,
+      "question": "Who was the producer of A Good Man?",
+      "reason": "Question exceeded time limit during semantic cluster pair (1,23)"
+    },
+    {
+      "id": 6220996,
+      "question": "Who was the screenwriter for Yaare Koogadali?",
+      "reason": "Question exceeded time limit during semantic cluster pair (0,45)"
+    },
+    {
+      "id": 2936270,
+      "question": "Who was the screenwriter for Thrilling?",
+      "reason": "Question exceeded time limit during semantic cluster pair (2,14)"
+    },
+    {
+      "id": 5659363,
+      "question": "Who is the father of Iphicles?",
+      "reason": "Question exceeded time limit during semantic cluster pair (4,7)"
+    },
+    {
+      "id": 342006,
+      "question": "Who was the producer of Speedy?",
+      "reason": "Question exceeded time limit during semantic cluster pair (1,20)"
+    }
+  ],
+  "avg_within_variability": 0.05717212257015888,
+  "avg_between_variability": 0.3096249030722366,
+  "avg_excess_instability": 0.2524527805020777,
+  "avg_pairwise_instability": 0.2932579429727959,
+  "avg_aggregated_entropy": 0.8205071283322668,
+  "mean_correctness_diagnostic": 0.0,
+  "n_positive_excess": 2,
+  "n_zero_excess": 0,
+  "n_negative_excess": 1,
+  "frac_positive_excess": 0.6666666666666666,
+  "frac_zero_excess": 0.0,
+  "frac_negative_excess": 0.3333333333333333,
+  "eq_correctness_table": {
+    "positive": {
+      "all_correct": 0,
+      "mixed": 0,
+      "all_incorrect": 2
+    },
+    "zero": {
+      "all_correct": 0,
+      "mixed": 0,
+      "all_incorrect": 0
+    },
+    "negative": {
+      "all_correct": 0,
+      "mixed": 0,
+      "all_incorrect": 1
+    }
+  },
+  "top_excess_examples": [
+    {
+      "id": 3802856,
+      "question": "What genre is Der Schuh des Manitu?",
+      "excess_transformation_instability": 0.4292654545761424,
+      "mean_correctness_diagnostic": 0.0
+    },
+    {
+      "id": 672700,
+      "question": "What genre is Thin Ice?",
+      "excess_transformation_instability": 0.3349406514695018,
+      "mean_correctness_diagnostic": 0.0
+    },
+    {
+      "id": 5451035,
+      "question": "In what city was Pierre Charette born?",
+      "excess_transformation_instability": -0.006847764539411071,
+      "mean_correctness_diagnostic": 0.0
+    }
+  ],
+  "avg_elapsed_seconds": 165.99411053334674,
+  "total_elapsed_seconds": 497.9823316000402,
+  "results": [
+    {
+      "id": 3802856,
+      "questions": [
+        "What genre is Der Schuh des Manitu?",
+        "What type of work is Der Schuh des Manitu?",
+        "Fans of what genre would like Der Schuh des Manitu?",
+        "What genre does Der Schuh des Manitu belong to?"
+      ],
+      "possible_answers": [
+        "Western film",
+        "western film",
+        "western genre",
+        "Western"
+      ],
+      "semantic_cluster_map": {
+        "operetta": "__cluster_0__",
+        "musical": "__cluster_1__",
+        "fantasy": "__cluster_2__",
+        "operatic drama": "__cluster_3__",
+        "opera": "__cluster_4__",
+        "fantasy literature": "__cluster_5__"
+      },
+      "transform_results": [
+        {
+          "reformulation_index": 1,
+          "question": "What genre is Der Schuh des Manitu?",
+          "batch_results": [
+            {
+              "batch_index": 1,
+              "predictions": [
+                "operetta",
+                "operetta",
+                "operetta",
+                "operetta"
+              ],
+              "extracted_predictions": [
+                "operetta",
+                "operetta",
+                "operetta",
+                "operetta"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 2,
+              "predictions": [
+                "operetta",
+                "operetta",
+                "musical",
+                "Operetta"
+              ],
+              "extracted_predictions": [
+                "operetta",
+                "operetta",
+                "musical",
+                "Operetta"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_1__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 0.75,
+                "__cluster_1__": 0.25
+              }
+            },
+            {
+              "batch_index": 3,
+              "predictions": [
+                "operetta",
+                "operetta",
+                "operetta",
+                "fantasy"
+              ],
+              "extracted_predictions": [
+                "operetta",
+                "operetta",
+                "operetta",
+                "fantasy"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_2__"
+              ],
+              "distribution": {
+                "__cluster_0__": 0.75,
+                "__cluster_2__": 0.25
+              }
+            },
+            {
+              "batch_index": 4,
+              "predictions": [
+                "Operetta",
+                "Operetta",
+                "operetta",
+                "operetta"
+              ],
+              "extracted_predictions": [
+                "Operetta",
+                "Operetta",
+                "operetta",
+                "operetta"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 5,
+              "predictions": [
+                "operetta",
+                "Operatic drama",
+                "operetta",
+                "operetta"
+              ],
+              "extracted_predictions": [
+                "operetta",
+                "Operatic drama",
+                "operetta",
+                "operetta"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_3__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 0.75,
+                "__cluster_3__": 0.25
+              }
+            }
+          ],
+          "mean_distribution": {
+            "__cluster_1__": 0.05,
+            "__cluster_3__": 0.05,
+            "__cluster_2__": 0.05,
+            "__cluster_0__": 0.85
+          },
+          "within_variability": 0.10934759191021544,
+          "semantic_entropy": 0.5875009311062074,
+          "mean_correctness_diagnostic": 0.0
+        },
+        {
+          "reformulation_index": 2,
+          "question": "What type of work is Der Schuh des Manitu?",
+          "batch_results": [
+            {
+              "batch_index": 1,
+              "predictions": [
+                "opera",
+                "opera",
+                "opera",
+                "opera"
+              ],
+              "extracted_predictions": [
+                "opera",
+                "opera",
+                "opera",
+                "opera"
+              ],
+              "buckets": [
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_4__"
+              ],
+              "distribution": {
+                "__cluster_4__": 1.0
+              }
+            },
+            {
+              "batch_index": 2,
+              "predictions": [
+                "opera",
+                "opera",
+                "opera",
+                "operetta"
+              ],
+              "extracted_predictions": [
+                "opera",
+                "opera",
+                "opera",
+                "operetta"
+              ],
+              "buckets": [
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_4__": 0.75,
+                "__cluster_0__": 0.25
+              }
+            },
+            {
+              "batch_index": 3,
+              "predictions": [
+                "opera",
+                "opera",
+                "operetta",
+                "opera"
+              ],
+              "extracted_predictions": [
+                "opera",
+                "opera",
+                "operetta",
+                "opera"
+              ],
+              "buckets": [
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_0__",
+                "__cluster_4__"
+              ],
+              "distribution": {
+                "__cluster_4__": 0.75,
+                "__cluster_0__": 0.25
+              }
+            },
+            {
+              "batch_index": 4,
+              "predictions": [
+                "opera",
+                "operetta",
+                "opera",
+                "operetta"
+              ],
+              "extracted_predictions": [
+                "opera",
+                "operetta",
+                "opera",
+                "operetta"
+              ],
+              "buckets": [
+                "__cluster_4__",
+                "__cluster_0__",
+                "__cluster_4__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_4__": 0.5,
+                "__cluster_0__": 0.5
+              }
+            },
+            {
+              "batch_index": 5,
+              "predictions": [
+                "opera",
+                "opera",
+                "opera",
+                "operetta"
+              ],
+              "extracted_predictions": [
+                "opera",
+                "opera",
+                "opera",
+                "operetta"
+              ],
+              "buckets": [
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_4__": 0.75,
+                "__cluster_0__": 0.25
+              }
+            }
+          ],
+          "mean_distribution": {
+            "__cluster_4__": 0.75,
+            "__cluster_0__": 0.25
+          },
+          "within_variability": 0.060403554788574884,
+          "semantic_entropy": 0.5623351446188083,
+          "mean_correctness_diagnostic": 0.0
+        },
+        {
+          "reformulation_index": 3,
+          "question": "Fans of what genre would like Der Schuh des Manitu?",
+          "batch_results": [
+            {
+              "batch_index": 1,
+              "predictions": [
+                "fantasy",
+                "fantasy",
+                "fantasy",
+                "fantasy"
+              ],
+              "extracted_predictions": [
+                "fantasy",
+                "fantasy",
+                "fantasy",
+                "fantasy"
+              ],
+              "buckets": [
+                "__cluster_2__",
+                "__cluster_2__",
+                "__cluster_2__",
+                "__cluster_2__"
+              ],
+              "distribution": {
+                "__cluster_2__": 1.0
+              }
+            },
+            {
+              "batch_index": 2,
+              "predictions": [
+                "fantasy",
+                "fantasy",
+                "fantasy",
+                "fantasy"
+              ],
+              "extracted_predictions": [
+                "fantasy",
+                "fantasy",
+                "fantasy",
+                "fantasy"
+              ],
+              "buckets": [
+                "__cluster_2__",
+                "__cluster_2__",
+                "__cluster_2__",
+                "__cluster_2__"
+              ],
+              "distribution": {
+                "__cluster_2__": 1.0
+              }
+            },
+            {
+              "batch_index": 3,
+              "predictions": [
+                "fantasy",
+                "fantasy",
+                "fantasy literature",
+                "fantasy"
+              ],
+              "extracted_predictions": [
+                "fantasy",
+                "fantasy",
+                "fantasy literature",
+                "fantasy"
+              ],
+              "buckets": [
+                "__cluster_2__",
+                "__cluster_2__",
+                "__cluster_5__",
+                "__cluster_2__"
+              ],
+              "distribution": {
+                "__cluster_2__": 0.75,
+                "__cluster_5__": 0.25
+              }
+            },
+            {
+              "batch_index": 4,
+              "predictions": [
+                "fantasy",
+                "fantasy",
+                "fantasy",
+                "fantasy literature"
+              ],
+              "extracted_predictions": [
+                "fantasy",
+                "fantasy",
+                "fantasy",
+                "fantasy literature"
+              ],
+              "buckets": [
+                "__cluster_2__",
+                "__cluster_2__",
+                "__cluster_2__",
+                "__cluster_5__"
+              ],
+              "distribution": {
+                "__cluster_2__": 0.75,
+                "__cluster_5__": 0.25
+              }
+            },
+            {
+              "batch_index": 5,
+              "predictions": [
+                "fantasy",
+                "fantasy",
+                "fantasy literature",
+                "fantasy"
+              ],
+              "extracted_predictions": [
+                "fantasy",
+                "fantasy",
+                "fantasy literature",
+                "fantasy"
+              ],
+              "buckets": [
+                "__cluster_2__",
+                "__cluster_2__",
+                "__cluster_5__",
+                "__cluster_2__"
+              ],
+              "distribution": {
+                "__cluster_2__": 0.75,
+                "__cluster_5__": 0.25
+              }
+            }
+          ],
+          "mean_distribution": {
+            "__cluster_2__": 0.85,
+            "__cluster_5__": 0.15
+          },
+          "within_variability": 0.05736155336821954,
+          "semantic_entropy": 0.42270908780599087,
+          "mean_correctness_diagnostic": 0.0
+        },
+        {
+          "reformulation_index": 4,
+          "question": "What genre does Der Schuh des Manitu belong to?",
+          "batch_results": [
+            {
+              "batch_index": 1,
+              "predictions": [
+                "Operetta",
+                "Operetta",
+                "Operetta",
+                "Operetta"
+              ],
+              "extracted_predictions": [
+                "Operetta",
+                "Operetta",
+                "Operetta",
+                "Operetta"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 2,
+              "predictions": [
+                "Operetta",
+                "Operetta",
+                "Operetta",
+                "Operetta"
+              ],
+              "extracted_predictions": [
+                "Operetta",
+                "Operetta",
+                "Operetta",
+                "Operetta"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 3,
+              "predictions": [
+                "Operetta",
+                "Operetta",
+                "Operetta",
+                "Operetta"
+              ],
+              "extracted_predictions": [
+                "Operetta",
+                "Operetta",
+                "Operetta",
+                "Operetta"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 4,
+              "predictions": [
+                "Operetta",
+                "Operetta",
+                "Operetta",
+                "Operetta"
+              ],
+              "extracted_predictions": [
+                "Operetta",
+                "Operetta",
+                "Operetta",
+                "Operetta"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 5,
+              "predictions": [
+                "Operetta",
+                "Operetta",
+                "Operetta",
+                "Operetta"
+              ],
+              "extracted_predictions": [
+                "Operetta",
+                "Operetta",
+                "Operetta",
+                "Operetta"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            }
+          ],
+          "mean_distribution": {
+            "__cluster_0__": 1.0
+          },
+          "within_variability": 0.0,
+          "semantic_entropy": 0.0,
+          "mean_correctness_diagnostic": 0.0
+        }
+      ],
+      "within_variability": 0.05677817501675247,
+      "between_variability": 0.4860436295928949,
+      "excess_transformation_instability": 0.4292654545761424,
+      "pairwise_instability": 0.469447458092497,
+      "aggregated_distribution": {
+        "__cluster_1__": 0.0125,
+        "__cluster_0__": 0.525,
+        "__cluster_4__": 0.1875,
+        "__cluster_3__": 0.0125,
+        "__cluster_2__": 0.225,
+        "__cluster_5__": 0.0375
+      },
+      "aggregated_entropy": 1.2204590660167576,
+      "mean_correctness_diagnostic": 0.0,
+      "elapsed_seconds": 141.2187314000912
+    },
+    {
+      "id": 672700,
+      "questions": [
+        "What genre is Thin Ice?",
+        "What type of work is Thin Ice?",
+        "Fans of what genre would like Thin Ice?",
+        "What genre does Thin Ice belong to?"
+      ],
+      "possible_answers": [
+        "documentary film",
+        "documentary movie",
+        "doc",
+        "film documentary",
+        "motion picture documentary",
+        "documentary",
+        "factual film"
+      ],
+      "semantic_cluster_map": {
+        "action thriller": "__cluster_0__",
+        "thriller": "__cluster_1__",
+        "horror": "__cluster_2__",
+        "thrillercrime": "__cluster_1__",
+        "horrorthriller": "__cluster_3__",
+        "film": "__cluster_4__",
+        "movie": "__cluster_4__",
+        "thriller fans": "__cluster_5__"
+      },
+      "transform_results": [
+        {
+          "reformulation_index": 1,
+          "question": "What genre is Thin Ice?",
+          "batch_results": [
+            {
+              "batch_index": 1,
+              "predictions": [
+                "Action thriller",
+                "Thriller",
+                "horror",
+                "Thriller"
+              ],
+              "extracted_predictions": [
+                "Action thriller",
+                "Thriller",
+                "horror",
+                "Thriller"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_1__",
+                "__cluster_2__",
+                "__cluster_1__"
+              ],
+              "distribution": {
+                "__cluster_0__": 0.25,
+                "__cluster_1__": 0.5,
+                "__cluster_2__": 0.25
+              }
+            },
+            {
+              "batch_index": 2,
+              "predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller/Crime",
+                "Thriller"
+              ],
+              "extracted_predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller/Crime",
+                "Thriller"
+              ],
+              "buckets": [
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__"
+              ],
+              "distribution": {
+                "__cluster_1__": 1.0
+              }
+            },
+            {
+              "batch_index": 3,
+              "predictions": [
+                "Thriller/Crime",
+                "Horror",
+                "thriller",
+                "horror/thriller"
+              ],
+              "extracted_predictions": [
+                "Thriller/Crime",
+                "Horror",
+                "thriller",
+                "horror/thriller"
+              ],
+              "buckets": [
+                "__cluster_1__",
+                "__cluster_2__",
+                "__cluster_1__",
+                "__cluster_3__"
+              ],
+              "distribution": {
+                "__cluster_1__": 0.5,
+                "__cluster_2__": 0.25,
+                "__cluster_3__": 0.25
+              }
+            },
+            {
+              "batch_index": 4,
+              "predictions": [
+                "thriller",
+                "Thriller/Crime",
+                "Thriller/Crime",
+                "thriller"
+              ],
+              "extracted_predictions": [
+                "thriller",
+                "Thriller/Crime",
+                "Thriller/Crime",
+                "thriller"
+              ],
+              "buckets": [
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__"
+              ],
+              "distribution": {
+                "__cluster_1__": 1.0
+              }
+            },
+            {
+              "batch_index": 5,
+              "predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller",
+                "Thriller"
+              ],
+              "extracted_predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller",
+                "Thriller"
+              ],
+              "buckets": [
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__"
+              ],
+              "distribution": {
+                "__cluster_1__": 1.0
+              }
+            }
+          ],
+          "mean_distribution": {
+            "__cluster_1__": 0.8,
+            "__cluster_3__": 0.05,
+            "__cluster_2__": 0.1,
+            "__cluster_0__": 0.05
+          },
+          "within_variability": 0.14678561211729999,
+          "semantic_entropy": 0.7083465777061715,
+          "mean_correctness_diagnostic": 0.0
+        },
+        {
+          "reformulation_index": 2,
+          "question": "What type of work is Thin Ice?",
+          "batch_results": [
+            {
+              "batch_index": 1,
+              "predictions": [
+                "film",
+                "film",
+                "film",
+                "movie"
+              ],
+              "extracted_predictions": [
+                "film",
+                "film",
+                "film",
+                "movie"
+              ],
+              "buckets": [
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_4__"
+              ],
+              "distribution": {
+                "__cluster_4__": 1.0
+              }
+            },
+            {
+              "batch_index": 2,
+              "predictions": [
+                "film",
+                "film",
+                "film",
+                "film"
+              ],
+              "extracted_predictions": [
+                "film",
+                "film",
+                "film",
+                "film"
+              ],
+              "buckets": [
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_4__"
+              ],
+              "distribution": {
+                "__cluster_4__": 1.0
+              }
+            },
+            {
+              "batch_index": 3,
+              "predictions": [
+                "film",
+                "film",
+                "film",
+                "film"
+              ],
+              "extracted_predictions": [
+                "film",
+                "film",
+                "film",
+                "film"
+              ],
+              "buckets": [
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_4__"
+              ],
+              "distribution": {
+                "__cluster_4__": 1.0
+              }
+            },
+            {
+              "batch_index": 4,
+              "predictions": [
+                "film",
+                "film",
+                "film",
+                "movie"
+              ],
+              "extracted_predictions": [
+                "film",
+                "film",
+                "film",
+                "movie"
+              ],
+              "buckets": [
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_4__"
+              ],
+              "distribution": {
+                "__cluster_4__": 1.0
+              }
+            },
+            {
+              "batch_index": 5,
+              "predictions": [
+                "film",
+                "film",
+                "film",
+                "film"
+              ],
+              "extracted_predictions": [
+                "film",
+                "film",
+                "film",
+                "film"
+              ],
+              "buckets": [
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_4__",
+                "__cluster_4__"
+              ],
+              "distribution": {
+                "__cluster_4__": 1.0
+              }
+            }
+          ],
+          "mean_distribution": {
+            "__cluster_4__": 1.0
+          },
+          "within_variability": 0.0,
+          "semantic_entropy": 0.0,
+          "mean_correctness_diagnostic": 0.0
+        },
+        {
+          "reformulation_index": 3,
+          "question": "Fans of what genre would like Thin Ice?",
+          "batch_results": [
+            {
+              "batch_index": 1,
+              "predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller",
+                "Thriller"
+              ],
+              "extracted_predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller",
+                "Thriller"
+              ],
+              "buckets": [
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__"
+              ],
+              "distribution": {
+                "__cluster_1__": 1.0
+              }
+            },
+            {
+              "batch_index": 2,
+              "predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller",
+                "Thriller"
+              ],
+              "extracted_predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller",
+                "Thriller"
+              ],
+              "buckets": [
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__"
+              ],
+              "distribution": {
+                "__cluster_1__": 1.0
+              }
+            },
+            {
+              "batch_index": 3,
+              "predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller/Crime",
+                "Thriller"
+              ],
+              "extracted_predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller/Crime",
+                "Thriller"
+              ],
+              "buckets": [
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__"
+              ],
+              "distribution": {
+                "__cluster_1__": 1.0
+              }
+            },
+            {
+              "batch_index": 4,
+              "predictions": [
+                "Thriller fans",
+                "Thriller",
+                "Thriller",
+                "Thriller"
+              ],
+              "extracted_predictions": [
+                "Thriller fans",
+                "Thriller",
+                "Thriller",
+                "Thriller"
+              ],
+              "buckets": [
+                "__cluster_5__",
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__"
+              ],
+              "distribution": {
+                "__cluster_5__": 0.25,
+                "__cluster_1__": 0.75
+              }
+            },
+            {
+              "batch_index": 5,
+              "predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller/Crime",
+                "Thriller/Crime"
+              ],
+              "extracted_predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller/Crime",
+                "Thriller/Crime"
+              ],
+              "buckets": [
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__"
+              ],
+              "distribution": {
+                "__cluster_1__": 1.0
+              }
+            }
+          ],
+          "mean_distribution": {
+            "__cluster_1__": 0.95,
+            "__cluster_5__": 0.05
+          },
+          "within_variability": 0.038241035578813025,
+          "semantic_entropy": 0.1985152433458726,
+          "mean_correctness_diagnostic": 0.0
+        },
+        {
+          "reformulation_index": 4,
+          "question": "What genre does Thin Ice belong to?",
+          "batch_results": [
+            {
+              "batch_index": 1,
+              "predictions": [
+                "Thriller/Crime",
+                "Thriller",
+                "Thriller",
+                "Thriller"
+              ],
+              "extracted_predictions": [
+                "Thriller/Crime",
+                "Thriller",
+                "Thriller",
+                "Thriller"
+              ],
+              "buckets": [
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__"
+              ],
+              "distribution": {
+                "__cluster_1__": 1.0
+              }
+            },
+            {
+              "batch_index": 2,
+              "predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller",
+                "Thriller"
+              ],
+              "extracted_predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller",
+                "Thriller"
+              ],
+              "buckets": [
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__"
+              ],
+              "distribution": {
+                "__cluster_1__": 1.0
+              }
+            },
+            {
+              "batch_index": 3,
+              "predictions": [
+                "Thriller",
+                "Thriller",
+                "thriller",
+                "Thriller"
+              ],
+              "extracted_predictions": [
+                "Thriller",
+                "Thriller",
+                "thriller",
+                "Thriller"
+              ],
+              "buckets": [
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__"
+              ],
+              "distribution": {
+                "__cluster_1__": 1.0
+              }
+            },
+            {
+              "batch_index": 4,
+              "predictions": [
+                "Thriller",
+                "thriller",
+                "Thriller",
+                "Thriller"
+              ],
+              "extracted_predictions": [
+                "Thriller",
+                "thriller",
+                "Thriller",
+                "Thriller"
+              ],
+              "buckets": [
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__"
+              ],
+              "distribution": {
+                "__cluster_1__": 1.0
+              }
+            },
+            {
+              "batch_index": 5,
+              "predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller/Crime",
+                "Thriller/Crime"
+              ],
+              "extracted_predictions": [
+                "Thriller",
+                "Thriller",
+                "Thriller/Crime",
+                "Thriller/Crime"
+              ],
+              "buckets": [
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__",
+                "__cluster_1__"
+              ],
+              "distribution": {
+                "__cluster_1__": 1.0
+              }
+            }
+          ],
+          "mean_distribution": {
+            "__cluster_1__": 1.0
+          },
+          "within_variability": 0.0,
+          "semantic_entropy": 0.0,
+          "mean_correctness_diagnostic": 0.0
+        }
+      ],
+      "within_variability": 0.046256661924028254,
+      "between_variability": 0.3811973133935301,
+      "excess_transformation_instability": 0.3349406514695018,
+      "pairwise_instability": 0.37697236025391084,
+      "aggregated_distribution": {
+        "__cluster_1__": 0.6875,
+        "__cluster_0__": 0.0125,
+        "__cluster_4__": 0.25,
+        "__cluster_3__": 0.0125,
+        "__cluster_2__": 0.025,
+        "__cluster_5__": 0.0125
+      },
+      "aggregated_entropy": 0.8607233219240614,
+      "mean_correctness_diagnostic": 0.0,
+      "elapsed_seconds": 212.8373781000264
+    },
+    {
+      "id": 5451035,
+      "questions": [
+        "In what city was Pierre Charette born?",
+        "What city was Pierre Charette born in?",
+        "What city is Pierre Charette from?",
+        "What is Pierre Charette's hometown?"
+      ],
+      "possible_answers": [
+        "Masson-Angers"
+      ],
+      "semantic_cluster_map": {
+        "montreal": "__cluster_0__",
+        "montréal": "__cluster_0__",
+        "sainthyacinthe quebec": "__cluster_1__",
+        "quebec city": "__cluster_2__",
+        "québec city": "__cluster_2__",
+        "kingsey falls quebec": "__cluster_3__"
+      },
+      "transform_results": [
+        {
+          "reformulation_index": 1,
+          "question": "In what city was Pierre Charette born?",
+          "batch_results": [
+            {
+              "batch_index": 1,
+              "predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montréal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montréal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 2,
+              "predictions": [
+                "Montreal",
+                "Saint-Hyacinthe, Quebec",
+                "Montreal",
+                "Montreal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Saint-Hyacinthe, Quebec",
+                "Montreal",
+                "Montreal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_1__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 0.75,
+                "__cluster_1__": 0.25
+              }
+            },
+            {
+              "batch_index": 3,
+              "predictions": [
+                "Montreal",
+                "Quebec City",
+                "Montreal",
+                "Montréal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Quebec City",
+                "Montreal",
+                "Montréal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_2__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 0.75,
+                "__cluster_2__": 0.25
+              }
+            },
+            {
+              "batch_index": 4,
+              "predictions": [
+                "Montreal",
+                "Montreal",
+                "Montréal",
+                "Montreal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Montreal",
+                "Montréal",
+                "Montreal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 5,
+              "predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montréal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montréal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            }
+          ],
+          "mean_distribution": {
+            "__cluster_1__": 0.05,
+            "__cluster_2__": 0.05,
+            "__cluster_0__": 0.9
+          },
+          "within_variability": 0.07469023288221817,
+          "semantic_entropy": 0.39439769144744274,
+          "mean_correctness_diagnostic": 0.0
+        },
+        {
+          "reformulation_index": 2,
+          "question": "What city was Pierre Charette born in?",
+          "batch_results": [
+            {
+              "batch_index": 1,
+              "predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 2,
+              "predictions": [
+                "Montreal",
+                "Québec City",
+                "Montreal",
+                "Québec City"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Québec City",
+                "Montreal",
+                "Québec City"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_2__",
+                "__cluster_0__",
+                "__cluster_2__"
+              ],
+              "distribution": {
+                "__cluster_0__": 0.5,
+                "__cluster_2__": 0.5
+              }
+            },
+            {
+              "batch_index": 3,
+              "predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 4,
+              "predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montréal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montréal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 5,
+              "predictions": [
+                "Montreal",
+                "Montréal",
+                "Montreal",
+                "Montreal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Montréal",
+                "Montreal",
+                "Montreal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            }
+          ],
+          "mean_distribution": {
+            "__cluster_2__": 0.1,
+            "__cluster_0__": 0.9
+          },
+          "within_variability": 0.08630462173553426,
+          "semantic_entropy": 0.3250829733914482,
+          "mean_correctness_diagnostic": 0.0
+        },
+        {
+          "reformulation_index": 3,
+          "question": "What city is Pierre Charette from?",
+          "batch_results": [
+            {
+              "batch_index": 1,
+              "predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 2,
+              "predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 3,
+              "predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 4,
+              "predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 5,
+              "predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Québec City"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Québec City"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_2__"
+              ],
+              "distribution": {
+                "__cluster_0__": 0.75,
+                "__cluster_2__": 0.25
+              }
+            }
+          ],
+          "mean_distribution": {
+            "__cluster_2__": 0.05,
+            "__cluster_0__": 0.95
+          },
+          "within_variability": 0.038241035578813025,
+          "semantic_entropy": 0.1985152433458726,
+          "mean_correctness_diagnostic": 0.0
+        },
+        {
+          "reformulation_index": 4,
+          "question": "What is Pierre Charette's hometown?",
+          "batch_results": [
+            {
+              "batch_index": 1,
+              "predictions": [
+                "Saint-Hyacinthe, Quebec",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "extracted_predictions": [
+                "Saint-Hyacinthe, Quebec",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "buckets": [
+                "__cluster_1__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_1__": 0.25,
+                "__cluster_0__": 0.75
+              }
+            },
+            {
+              "batch_index": 2,
+              "predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 3,
+              "predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            },
+            {
+              "batch_index": 4,
+              "predictions": [
+                "Kingsey Falls, Quebec",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "extracted_predictions": [
+                "Kingsey Falls, Quebec",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "buckets": [
+                "__cluster_3__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_3__": 0.25,
+                "__cluster_0__": 0.75
+              }
+            },
+            {
+              "batch_index": 5,
+              "predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "extracted_predictions": [
+                "Montreal",
+                "Montreal",
+                "Montreal",
+                "Montreal"
+              ],
+              "buckets": [
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__",
+                "__cluster_0__"
+              ],
+              "distribution": {
+                "__cluster_0__": 1.0
+              }
+            }
+          ],
+          "mean_distribution": {
+            "__cluster_1__": 0.05,
+            "__cluster_3__": 0.05,
+            "__cluster_0__": 0.9
+          },
+          "within_variability": 0.07469023288221817,
+          "semantic_entropy": 0.39439769144744274,
+          "mean_correctness_diagnostic": 0.0
+        }
+      ],
+      "within_variability": 0.0684815307696959,
+      "between_variability": 0.06163376623028483,
+      "excess_transformation_instability": -0.006847764539411071,
+      "pairwise_instability": 0.03335401057198,
+      "aggregated_distribution": {
+        "__cluster_1__": 0.025,
+        "__cluster_3__": 0.0125,
+        "__cluster_2__": 0.05,
+        "__cluster_0__": 0.9125
+      },
+      "aggregated_entropy": 0.3803389970559815,
+      "mean_correctness_diagnostic": 0.0,
+      "elapsed_seconds": 143.9262220999226
+    }
+  ]
+}
