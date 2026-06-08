@@ -1,3 +1,13 @@
+"""
+Path 1 workflow: 
+1. Load the model and filter the dataset 
+2. Generate repeated sampled batches for each reformulation
+3. Normalise answers to short-answer form
+4. Perform semantic clustering
+5. Compute summary quantities
+6. Save outputs to JSON
+"""
+
 import os
 import re
 import json
@@ -13,7 +23,9 @@ from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
+# ----------
 # Configuration
+# ----------
 MODEL_NAME = "Qwen/Qwen2.5-7B-Instruct"
 DATASET_NAME = "ibm-research/popqa-tp"
 
@@ -22,7 +34,7 @@ N_QUESTIONS = 12
 N_PARAPHRASES_TOTAL = 4
 
 SELECTION_SEED = 100
-GENERATION_SEEDS = [4, 16, 64]
+GENERATION_SEEDS = [256, 3, 9, 27, 81]
 
 SAMPLES_PER_BATCH = 4
 N_BATCHES_PER_TRANSFORM = 4
@@ -43,6 +55,7 @@ model = AutoModelForCausalLM.from_pretrained(
 model.config.use_cache = True
 print("Model loaded.")
 
+# Send inputs to the device where the model is actually placed
 first_device = next(
     (d for d in model.hf_device_map.values() if d not in ["cpu", "disk"]),
     "cpu"
@@ -54,6 +67,7 @@ else:
     INPUT_DEVICE = first_device
 
 
+# Derive batch seed to ensure reproducible
 def derived_generation_seed(
     base_seed: int,
     question_id: int,
@@ -80,9 +94,12 @@ def check_deadline(deadline: float, stage: str = "") -> None:
         raise QuestionTimeout(msg)
 
 
+# -----------
 # Text normalization
+# -----------
 _ARTICLES = {"a", "an", "the"}
 
+# Lightweight normalisation for exact matches
 def normalize_text(text: str) -> str:
     text = text.strip().lower()
     text = text.translate(str.maketrans("", "", string.punctuation))
@@ -91,6 +108,7 @@ def normalize_text(text: str) -> str:
     return " ".join(toks)
 
 
+# Remove clauses, explanations and prefixes
 def extract_short_answer(text: str) -> str:
     text = text.strip()
 
@@ -104,6 +122,7 @@ def extract_short_answer(text: str) -> str:
     return text.strip()
 
 
+# Check if answer belong to the dataset's list of acceptalbe forms
 def is_correct_prediction(pred: str, gold_answers) -> bool:
     pred = extract_short_answer(pred)
     pred_norm = normalize_text(pred)
@@ -119,6 +138,7 @@ def is_correct_prediction(pred: str, gold_answers) -> bool:
     return pred_norm in gold_norms
 
 
+# Filter out answers that belongs to special answer buckets
 def special_bucket(pred: str) -> str | None:
     pred = extract_short_answer(pred)
 
@@ -156,6 +176,7 @@ def special_bucket(pred: str) -> str | None:
     return None
 
 
+# Make YES/NO judgement for a semantic-equivalence prompt
 def judge_yes_no(prompt: str) -> bool:
     messages = [{"role": "user", "content": prompt}]
     inputs = tokenizer.apply_chat_template(
@@ -181,8 +202,10 @@ def judge_yes_no(prompt: str) -> bool:
     return text.startswith("yes")
 
 
+# Cache set for revisited pairs
 _semantic_eq_cache = {}
 
+# Pairwise semantic equivalence test used to build answer buckets
 def same_meaning_under_question(question: str, ans_a: str, ans_b: str) -> bool:
     a = extract_short_answer(ans_a)
     b = extract_short_answer(ans_b)
@@ -217,6 +240,7 @@ def same_meaning_under_question(question: str, ans_a: str, ans_b: str) -> bool:
     return out
 
 
+# Union-find structure for pairwise semantic equivalent links
 class DSU:
     def __init__(self, n: int):
         self.parent = list(range(n))
@@ -233,6 +257,7 @@ class DSU:
             self.parent[rb] = ra
 
 
+# Build semantic buckets for ordinary answers with fixed prompt
 def build_semantic_cluster_map(
     question: str,
     answers: list[str],
@@ -241,6 +266,7 @@ def build_semantic_cluster_map(
     uniq_answers: list[str] = []
     seen = set()
 
+    # Remove trivial identical strings
     for a in answers:
         if deadline is not None:
             check_deadline(deadline, "semantic cluster preprocessing")
@@ -253,6 +279,7 @@ def build_semantic_cluster_map(
     if not uniq_answers:
         return {}
 
+    # Merge answers if equivalent
     dsu = DSU(len(uniq_answers))
 
     for i in range(len(uniq_answers)):
@@ -283,7 +310,9 @@ def build_semantic_cluster_map(
     return cluster_map
 
 
+# ----------
 # Prompt construction
+# ----------
 def build_standalone_prompt(question: str) -> str:
     return (
         "Answer the factual question.\n\n"
@@ -294,7 +323,10 @@ def build_standalone_prompt(question: str) -> str:
     )
 
 
+# ----------
 # Generation
+# ----------
+# Sample n short answers for every prompt
 def generate_many(
     question: str,
     n: int,
@@ -338,7 +370,10 @@ def generate_many(
     return texts
 
 
+# ----------
 # Dataset loading/grouping
+# ----------
+# Group questions in datasets together with three paraphrases
 def load_popqa_tp_records():
     ds_obj = load_dataset(DATASET_NAME)
     if isinstance(ds_obj, dict):
@@ -386,6 +421,7 @@ def load_popqa_tp_records():
     return grouped
 
 
+# Strict setting filters out categories that behaved unreliably
 def is_clean_question(question: str) -> bool:
     q = question.strip().lower()
 
@@ -430,6 +466,7 @@ def is_clean_question(question: str) -> bool:
     return True
 
 
+# Filter out corrupted text/encoding artefacts
 MOJIBAKE_MARKERS = [
     "�", "√", "∂", "Ã", "Â", "â€™", "â€œ", "â€", "â€“", "â€”", "¤"
 ]
@@ -449,6 +486,7 @@ def has_mojibake(text: str) -> bool:
     return False
 
 
+# Filter out reformulations that were empirically not meaning-preserving
 def is_clean_group(questions: list[str]) -> bool:
     lowers = [q.strip().lower() for q in questions]
 
@@ -463,7 +501,9 @@ def is_clean_group(questions: list[str]) -> bool:
     return True
 
 
+# ----------
 # Experiment
+# ----------
 def run_one_example(
     example: dict,
     base_generation_seed: int,
@@ -479,6 +519,7 @@ def run_one_example(
     transform_results = []
     all_ordinary_answers = []
 
+    # Store raw outputs, postpone semantic bucketing until full answer pool generated
     for j, question in enumerate(questions, start=1):
         check_deadline(deadline, f"reformulation {j} start")
         batch_results = []
@@ -523,6 +564,7 @@ def run_one_example(
 
     check_deadline(deadline, "before semantic clustering")
 
+    # Cluster all ordinary answers
     reference_question = questions[0]
     cluster_map = build_semantic_cluster_map(
         reference_question,
@@ -530,6 +572,7 @@ def run_one_example(
         deadline=deadline,
     )
 
+    # Convert stored answers into semantic buckets
     for t_idx, t in enumerate(transform_results, start=1):
         check_deadline(deadline, f"second pass reformulation {t_idx} start")
 
@@ -551,6 +594,7 @@ def run_one_example(
                 final_buckets.append(bucket)
                 all_correct_flags.append(is_correct_prediction(extracted_pred, gold_answers))
 
+            # Compute reformulation empirical distribution
             dist = empirical_distribution(final_buckets)
 
             b["buckets"] = final_buckets
@@ -576,6 +620,7 @@ def run_one_example(
 
     W_q = sum(within_vals) / len(within_vals) if within_vals else 0.0
 
+    # B_q, W_q and E_q
     between_vals = []
     for i in range(len(transform_results)):
         check_deadline(deadline, f"between-transform outer loop i={i}")
@@ -625,12 +670,14 @@ def run_one_example(
     }
 
 
+# Convert semantic buckets to empirical distribution
 def empirical_distribution(buckets: list[str]) -> dict[str, float]:
     counter = Counter(buckets)
     total = sum(counter.values())
     return {k: v / total for k, v in counter.items()}
 
 
+# Average sparse distribution
 def average_distributions(dists: list[dict[str, float]]) -> dict[str, float]:
     keys = set()
     for d in dists:
@@ -673,6 +720,7 @@ def mean_pairwise_js(dists: list[dict[str, float]]) -> float:
     return sum(vals) / len(vals)
 
 
+# Avoid unstable sign changes from floating point noise
 def eq_sign_bucket(e: float, eps: float = 1e-12) -> str:
     if e > eps:
         return "positive"
@@ -704,6 +752,7 @@ def build_eq_correctness_table(results: list[dict]) -> dict:
     return table
 
 
+# Run one experiment for a selection seed
 def run_single_generation_seed(
     filtered: list[dict],
     generation_seed: int,
@@ -757,6 +806,7 @@ def run_single_generation_seed(
                 f"correct_diag={res['mean_correctness_diagnostic']:.3f}"
             )
 
+        # If times out, replace with next question
         except QuestionTimeout as e:
             print(f"  -> TIMEOUT, skipped for now: {e}")
             skipped_timeout.append({
@@ -805,6 +855,7 @@ def run_single_generation_seed(
     frac_zero_excess = n_zero_excess / len(results)
     frac_negative_excess = n_negative_excess / len(results)
 
+    # Small representative list for quick inspection
     eq_correctness_table = build_eq_correctness_table(results)
 
     top_excess_examples = sorted(
@@ -854,7 +905,9 @@ def run_single_generation_seed(
     }
 
 
+# -----------
 # Main
+# ----------
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 

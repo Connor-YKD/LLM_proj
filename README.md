@@ -95,6 +95,8 @@ The Path 2 scripts produce JSON files containing, for each run:
 
 These outputs are used for the tables and discussion in the Path 2 results section of the thesis.
 
+---
+
 ## Reproducing the thesis results
 
 The main reported thesis results correspond to the **stricter filtering setting**.

@@ -1,3 +1,14 @@
+"""
+1. Load the model and filter the dataset 
+2. Construct finite reformulation trees
+3. At each node:
+   1) replay the prefix
+   2) sample answers under the current prompt history
+   3) choose and write a representative answer back into history
+4. Compute summary quantities
+5. Save outputs to JSON
+"""
+
 import os
 import re
 import json
@@ -13,19 +24,21 @@ from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
+# ----------
 # Configuration
+# ----------
 MODEL_NAME = "Qwen/Qwen2.5-7B-Instruct"
 DATASET_NAME = "ibm-research/popqa-tp"
 
 MAX_NEW_TOKENS = 8
-N_QUESTIONS = 24
+N_QUESTIONS = 12
 N_PARAPHRASES_TOTAL = 4
-SAMPLES_PER_NODE = 6
+SAMPLES_PER_NODE = 4
 TEMPERATURE = 0.7
 TOP_P = 0.95
 
-SELECTION_SEEDS = [42]
-BASE_GENERATION_SEEDS = [15, 20, 25]
+SELECTION_SEEDS = [100]
+BASE_GENERATION_SEEDS = [256, 3, 9, 27, 81]
 
 OUTPUT_DIR = "outputs"
 OUTPUT_PATH = os.path.join(OUTPUT_DIR, "popqa_tp_path2.json")
@@ -42,6 +55,7 @@ model = AutoModelForCausalLM.from_pretrained(
 model.config.use_cache = True
 print("Model loaded.")
 
+# Send inputs to the device where the model is actually placed
 first_device = next(
     (d for d in model.hf_device_map.values() if d not in ["cpu", "disk"]),
     "cpu"
@@ -66,9 +80,12 @@ def check_deadline(deadline: float, stage: str = "") -> None:
         raise QuestionTimeout(msg)
 
 
+# -----------
 # Text normalization
+# -----------
 _ARTICLES = {"a", "an", "the"}
 
+# Lightweight normalisation for exact matches
 def normalize_text(text: str) -> str:
     text = text.strip().lower()
     text = text.translate(str.maketrans("", "", string.punctuation))
@@ -77,6 +94,7 @@ def normalize_text(text: str) -> str:
     return " ".join(toks)
 
 
+# Remove clauses, explanations and prefixes
 def extract_short_answer(text: str) -> str:
     text = text.strip()
 
@@ -90,6 +108,7 @@ def extract_short_answer(text: str) -> str:
     return text.strip()
 
 
+# Check if answer belong to the dataset's list of acceptalbe forms
 def is_correct_prediction(pred: str, gold_answers) -> bool:
     pred = extract_short_answer(pred)
     pred_norm = normalize_text(pred)
@@ -105,6 +124,7 @@ def is_correct_prediction(pred: str, gold_answers) -> bool:
     return pred_norm in gold_norms
 
 
+# Filter out answers that belongs to special answer buckets
 def special_bucket(pred: str) -> str | None:
     pred = extract_short_answer(pred)
 
@@ -142,6 +162,7 @@ def special_bucket(pred: str) -> str | None:
     return None
 
 
+# Make YES/NO judgement for a semantic-equivalence prompt
 def judge_yes_no(prompt: str) -> bool:
     messages = [{"role": "user", "content": prompt}]
     inputs = tokenizer.apply_chat_template(
@@ -167,8 +188,10 @@ def judge_yes_no(prompt: str) -> bool:
     return text.startswith("yes")
 
 
+# Cache set for revisited pairs
 _semantic_eq_cache = {}
 
+# Pairwise semantic equivalence test used to build answer buckets
 def same_meaning_under_question(question: str, ans_a: str, ans_b: str) -> bool:
     a = extract_short_answer(ans_a)
     b = extract_short_answer(ans_b)
@@ -203,6 +226,7 @@ def same_meaning_under_question(question: str, ans_a: str, ans_b: str) -> bool:
     return out
 
 
+# Union-find structure for pairwise semantic equivalent links
 class DSU:
     def __init__(self, n: int):
         self.parent = list(range(n))
@@ -219,6 +243,7 @@ class DSU:
             self.parent[rb] = ra
 
 
+# Build semantic buckets for ordinary answers with fixed prompt
 def build_semantic_cluster_map(
     question: str,
     answers: list[str],
@@ -227,6 +252,7 @@ def build_semantic_cluster_map(
     uniq_answers: list[str] = []
     seen = set()
 
+    # Remove trivial identical strings
     for a in answers:
         if deadline is not None:
             check_deadline(deadline, "semantic cluster preprocessing")
@@ -239,6 +265,7 @@ def build_semantic_cluster_map(
     if not uniq_answers:
         return {}
 
+    # Merge answers if equivalent
     dsu = DSU(len(uniq_answers))
 
     for i in range(len(uniq_answers)):
@@ -252,6 +279,7 @@ def build_semantic_cluster_map(
             if same_meaning_under_question(question, uniq_answers[i], uniq_answers[j]):
                 dsu.union(i, j)
 
+    # Convert connected components into cluster labels
     root_to_label: dict[int, str] = {}
     cluster_map: dict[str, str] = {}
     next_id = 0
@@ -269,7 +297,10 @@ def build_semantic_cluster_map(
     return cluster_map
 
 
+# ----------
 # Prompt construction
+# ----------
+# Store history record for prompt history
 def make_history_record(step_idx: int, question: str, answer: str) -> dict:
     return {
         "step": step_idx,
@@ -278,6 +309,7 @@ def make_history_record(step_idx: int, question: str, answer: str) -> dict:
     }
 
 
+# Build current prompt from prior history record with next reformulation
 def build_path2_prompt(history_records: list[dict], current_question: str) -> str:
     if history_records:
         history_json = json.dumps(history_records, ensure_ascii=False, indent=2)
@@ -297,7 +329,10 @@ def build_path2_prompt(history_records: list[dict], current_question: str) -> st
     )
 
 
+# ----------
 # Generation
+# ----------
+# Sample n short answers from current prompt using given seed
 def sample_many(prompt: str, n: int, generation_seed: int | None = None) -> list[str]:
     messages = [{"role": "user", "content": prompt}]
     inputs = tokenizer.apply_chat_template(
@@ -313,6 +348,7 @@ def sample_many(prompt: str, n: int, generation_seed: int | None = None) -> list
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(generation_seed)
 
+    # Draw multiple stochastic completion from current prompt
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
@@ -335,7 +371,10 @@ def sample_many(prompt: str, n: int, generation_seed: int | None = None) -> list
     return predictions
 
 
-# Dataset filtering
+# ----------
+# Dataset loading/grouping
+# ----------
+# Group questions in datasets together with three paraphrases
 def load_popqa_tp_records():
     ds_obj = load_dataset(DATASET_NAME)
     if isinstance(ds_obj, dict):
@@ -383,6 +422,7 @@ def load_popqa_tp_records():
     return grouped
 
 
+# Strict setting filters out categories that behaved unreliably
 def is_clean_question(question: str) -> bool:
     q = question.strip().lower()
 
@@ -427,6 +467,7 @@ def is_clean_question(question: str) -> bool:
     return True
 
 
+# Filter out corrupted text/encoding artefacts
 MOJIBAKE_MARKERS = [
     "�", "√", "∂", "Ã", "Â", "â€™", "â€œ", "â€", "â€“", "â€”", "¤"
 ]
@@ -446,6 +487,7 @@ def has_mojibake(text: str) -> bool:
     return False
 
 
+# Filter out reformulations that were empirically not meaning-preserving
 def is_clean_group(questions: list[str]) -> bool:
     lowers = [q.strip().lower() for q in questions]
 
@@ -460,7 +502,10 @@ def is_clean_group(questions: list[str]) -> bool:
     return True
 
 
+# ----------
 # Tree utilities
+# ----------
+# Choose representative answer written back into prompt history based on largest semantic bucket
 def choose_history_answer(
     question: str,
     extracted_predictions: list[str],
@@ -472,6 +517,7 @@ def choose_history_answer(
     if not cleaned:
         return ""
 
+    # Separate ordinary answer from special buckets
     ordinary_answers = []
     special_examples = defaultdict(list)
 
@@ -494,6 +540,7 @@ def choose_history_answer(
         else:
             representative[sb] = vals[0]
 
+    # For ordinary answers, choose representative of largest semantic clusters
     if ordinary_answers:
         unique_norms = {normalize_text(a) for a in ordinary_answers if normalize_text(a)}
         if len(unique_norms) == 1:
@@ -520,10 +567,12 @@ def choose_history_answer(
     if not candidate_counts:
         return ""
 
+    # Write back the representative to stablize history
     best_label, _ = max(candidate_counts.items(), key=lambda kv: kv[1])
     return representative[best_label]
 
 
+# Seed for current tree prefix
 def prefix_generation_seed(base_seed: int, prefix: tuple[int, ...]) -> int:
     seed = base_seed
     for i, idx in enumerate(prefix, start=1):
@@ -531,6 +580,7 @@ def prefix_generation_seed(base_seed: int, prefix: tuple[int, ...]) -> int:
     return seed
 
 
+# Enumerate all admissible reformulation prefixes
 def build_tree_nodes(n_questions: int) -> list[tuple[int, ...]]:
     assert n_questions >= 2
     remaining = list(range(1, n_questions))
@@ -544,6 +594,7 @@ def build_tree_nodes(n_questions: int) -> list[tuple[int, ...]]:
     return nodes
 
 
+# All extensions with length one step without resuing reformulations
 def child_nodes(node: tuple[int, ...], n_questions: int) -> list[tuple[int, ...]]:
     used = set(node)
     remaining = [i for i in range(1, n_questions) if i not in used]
@@ -554,6 +605,7 @@ def node_questions(node: tuple[int, ...], questions: list[str]) -> list[str]:
     return [questions[i] for i in node]
 
 
+# Replay one tree node and estimate the score
 def estimate_score_for_node(
     node: tuple[int, ...],
     questions: list[str],
@@ -563,6 +615,7 @@ def estimate_score_for_node(
 ) -> dict:
     qs = node_questions(node, questions)
 
+    # Replay prefixes sequentially
     history_records = []
     step_trace = []
 
@@ -577,6 +630,7 @@ def estimate_score_for_node(
             check_deadline(deadline, f"node {node}, local_step {local_step} start")
 
         current_question = questions[q_idx]
+        # Build history-conditioned prompt
         prompt = build_path2_prompt(history_records, current_question)
 
         if deadline is not None:
@@ -609,6 +663,7 @@ def estimate_score_for_node(
             "generation_seed": gen_seed,
         })
 
+        # For nonterminal steps, write answer back to history
         if local_step < len(node):
             if deadline is not None:
                 check_deadline(deadline, f"node {node}, local_step {local_step} before history update")
@@ -646,7 +701,10 @@ def estimate_score_for_node(
     }
 
 
+# ----------
 # Per-example experiment
+# ----------
+# Run full tree for a question group
 def run_one_example(
     example: dict,
     base_generation_seed: int,
@@ -675,6 +733,7 @@ def run_one_example(
 
         check_deadline(deadline, f"after node {node}")
 
+    # Compare nonterminal node with average of its children
     comparisons = []
     for node in nodes:
         children = child_nodes(node, len(questions))
@@ -697,6 +756,7 @@ def run_one_example(
             "nonnegative": delta >= 0,
         })
 
+    # Nodewise score movement
     avg_delta = sum(c["delta"] for c in comparisons) / len(comparisons)
     frac_nonnegative = sum(c["nonnegative"] for c in comparisons) / len(comparisons)
 
@@ -731,7 +791,9 @@ def run_one_example(
     }
 
 
+# -----------
 # Main
+# -----------
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -757,6 +819,7 @@ def main():
 
     all_runs = []
 
+    # Loop over selection seed with generation seed
     for selection_seed, base_generation_seed in product(SELECTION_SEEDS, BASE_GENERATION_SEEDS):
         print("\n===================================")
         print(
@@ -851,6 +914,7 @@ def main():
         print(f"  frac nonnegative:         {overall_frac_nonnegative:.3f}")
         print(f"  avg time/question:        {avg_elapsed:.2f}s")
 
+    # Final multi-seed experiment summary
     summary = {
         "model_name": MODEL_NAME,
         "dataset_name": DATASET_NAME,
